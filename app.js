@@ -1,5 +1,5 @@
 import express from 'express';
-import chalk from 'chalk';
+import chalk from './index.js/chalk/source';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
