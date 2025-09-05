@@ -1,10 +1,10 @@
+// api/ai.js
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const userMessage = req.body.message;
-
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
       if (!OPENROUTER_API_KEY) {
@@ -15,17 +15,16 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`
         },
         body: JSON.stringify({
           model: "openassistant/airoboros-llama2-7b",
           messages: [{ role: "user", content: userMessage }]
-        }),
+        })
       });
 
       const data = await response.json();
 
-      // Send only the AI text content
       res.status(200).json({ message: data.choices[0].message.content });
 
     } catch (error) {

@@ -1,3 +1,4 @@
+// chat.js
 import { useState } from 'react';
 
 export default function Chat() {
@@ -25,6 +26,7 @@ export default function Chat() {
         role: 'ai',
         content: data.message || 'No response'
       };
+
       setChatLog((prev) => [...prev, aiMessage]);
 
     } catch (err) {
@@ -41,7 +43,7 @@ export default function Chat() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
-      <h1>AI Chat</h1>
+      <h1>🚀 My AI Assistant</h1>
       <div
         style={{
           border: '1px solid #ccc',
