@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Project</title>
+  <title>AI SaaS App</title>
 </head>
 <body>
-  <h1>Hello AI World on Vercel!</h1>
-  <p>Backend is available at <a href="/api/hello">/api/hello</a></p>
+  <h1>🚀 My AI Assistant</h1>
+  <input type="text" id="prompt" placeholder="Ask AI something...">
+  <button onclick="askAI()">Send</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function askAI() {
+      const prompt = document.getElementById("prompt").value;
+      const res = await fetch(`/api/ai?prompt=${encodeURIComponent(prompt)}`);
+      const data = await res.json();
+      document.getElementById("result").innerText = `AI: ${data.aiReply}`;
+    }
+  </script>
 </body>
 </html>
