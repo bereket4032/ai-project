@@ -13,12 +13,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No message provided' });
     }
 
-    // Example: call your AI backend
+    // Call your AI backend directly
     const response = await fetch('https://api.openrouter.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}` // use your key here
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}` // your OpenRouter key
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',

@@ -1,78 +1,86 @@
-// client/pages/chat.js
-"use client";
-
-import { useState } from "react";
+// chat.js
+import { useState } from 'react';
 
 export default function Chat() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState('');
+  const [chatLog, setChatLog] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Function to send message to backend
   const sendMessageToAI = async () => {
-    if (!input.trim()) return;
+    if (!message) return;
 
-    const userMessage = { role: "user", content: input };
-    setMessages([...messages, userMessage]);
-    setInput("");
     setLoading(true);
+    const userMessage = { role: 'user', content: message };
+    setChatLog((prev) => [...prev, userMessage]);
 
     try {
-      const response = await fetch("http://localhost:3001/api/ai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: input }),
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
       });
 
-      if (!response.ok) throw new Error("AI request failed");
-
-      const data = await response.json();
-      const aiMessage = { role: "ai", content: data.reply };
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      const errorMessage = { role: "ai", content: "Failed to get AI response." };
-      setMessages((prev) => [...prev, errorMessage]);
+      const data = await res.json();
+      if (data.result) {
+        const aiMessage = {
+          role: 'ai',
+          content: data.result.choices?.[0]?.message?.content || 'No response'
+        };
+        setChatLog((prev) => [...prev, aiMessage]);
+      } else if (data.error) {
+        setChatLog((prev) => [...prev, { role: 'ai', content: `Error: ${data.error}` }]);
+      }
+    } catch (err) {
+      setChatLog((prev) => [...prev, { role: 'ai', content: `Error: ${err.message}` }]);
     } finally {
       setLoading(false);
+      setMessage('');
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessageToAI();
+    if (e.key === 'Enter') sendMessageToAI();
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "50px auto", fontFamily: "Arial" }}>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
       <h1>AI Chat</h1>
       <div
         style={{
-          border: "1px solid #ccc",
-          padding: "10px",
-          minHeight: "400px",
-          marginBottom: "10px",
-          overflowY: "auto",
+          border: '1px solid #ccc',
+          padding: '10px',
+          height: '400px',
+          overflowY: 'auto',
+          marginBottom: '10px'
         }}
       >
-        {messages.map((msg, index) => (
-          <div key={index} style={{ margin: "5px 0" }}>
-            <strong>{msg.role === "user" ? "You" : "AI"}:</strong> {msg.content}
+        {chatLog.map((msg, index) => (
+          <div
+            key={index}
+            style={{
+              textAlign: msg.role === 'user' ? 'right' : 'left',
+              margin: '5px 0'
+            }}
+          >
+            <strong>{msg.role === 'user' ? 'You' : 'AI'}: </strong>
+            <span>{msg.content}</span>
           </div>
         ))}
-        {loading && <div>AI is typing...</div>}
       </div>
       <input
         type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Type your message..."
-        style={{ width: "80%", padding: "10px" }}
+        style={{ width: '80%', padding: '10px' }}
       />
-      <button onClick={sendMessageToAI} style={{ padding: "10px 20px", marginLeft: "10px" }}>
-        Send
+      <button
+        onClick={sendMessageToAI}
+        disabled={loading}
+        style={{ padding: '10px 20px', marginLeft: '5px' }}
+      >
+        {loading ? 'Sending...' : 'Send'}
       </button>
     </div>
   );
