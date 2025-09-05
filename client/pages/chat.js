@@ -1,4 +1,3 @@
-// chat.js
 import { useState } from 'react';
 
 export default function Chat() {
@@ -21,15 +20,13 @@ export default function Chat() {
       });
 
       const data = await res.json();
-      if (data.result) {
-        const aiMessage = {
-          role: 'ai',
-          content: data.result.choices?.[0]?.message?.content || 'No response'
-        };
-        setChatLog((prev) => [...prev, aiMessage]);
-      } else if (data.error) {
-        setChatLog((prev) => [...prev, { role: 'ai', content: `Error: ${data.error}` }]);
-      }
+
+      const aiMessage = {
+        role: 'ai',
+        content: data.message || 'No response'
+      };
+      setChatLog((prev) => [...prev, aiMessage]);
+
     } catch (err) {
       setChatLog((prev) => [...prev, { role: 'ai', content: `Error: ${err.message}` }]);
     } finally {
