@@ -1,28 +1,36 @@
-//import { supabase } from '../lib/supabase.js';
+// api/ai.js
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  const userInput = req.query.prompt || "Hello AI!";
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  // Call OpenRouter AI
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-3.5-turbo",
-      messages: [{ role: "user", content: userInput }]
-    })
-  });
+  try {
+    const { message } = req.body;
 
-  const data = await response.json();
-  const aiReply = data.choices?.[0]?.message?.content || "No response";
+    if (!message) {
+      return res.status(400).json({ error: 'No message provided' });
+    }
 
-  // Save to Supabase
-  await supabase.from("conversations").insert([
-    { user_input: userInput, ai_response: aiReply }
-  ]);
+    // Example: call your AI backend
+    const response = await fetch('https://api.openrouter.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}` // use your key here
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: message }]
+      })
+    });
 
-  res.status(200).json({ userInput, aiReply });
+    const data = await response.json();
+
+    res.status(200).json({ result: data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 }
