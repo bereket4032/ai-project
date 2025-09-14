@@ -1,12 +1,22 @@
 const input = document.getElementById("input");
-const output = document.getElementById("output");
 const sendBtn = document.getElementById("sendBtn");
+const chatBox = document.getElementById("chat-box");
+
+function appendMessage(content, sender) {
+  const msg = document.createElement("div");
+  msg.textContent = content;
+  msg.classList.add("message", sender);
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 
 sendBtn.addEventListener("click", async () => {
   const message = input.value.trim();
   if (!message) return;
 
-  output.textContent = "Thinking...";
+  appendMessage(message, "user");
+  input.value = "";
+  appendMessage("Thinking...", "ai");
 
   try {
     const res = await fetch("/api/ai", {
@@ -16,8 +26,16 @@ sendBtn.addEventListener("click", async () => {
     });
 
     const data = await res.json();
-    output.textContent = data.result || JSON.stringify(data);
+    chatBox.lastChild.textContent = data.result || "No response";
   } catch (err) {
-    output.textContent = "Error: " + err.message;
+    chatBox.lastChild.textContent = "Error: " + err.message;
+  }
+});
+
+// Optional: send message on Enter key
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendBtn.click();
   }
 });
