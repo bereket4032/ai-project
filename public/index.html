@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI SaaS App</title>
+  <meta charset="UTF-8">
+  <title>AI Chat App 🚀 with Beki</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🚀 My AI Assistant</h1>
-  <input type="text" id="prompt" placeholder="Ask AI something...">
-  <button onclick="askAI()">Send</button>
-  <pre id="result"></pre>
-
-  <script>
-    async function askAI() {
-      const prompt = document.getElementById("prompt").value;
-      const res = await fetch(`/api/ai?prompt=${encodeURIComponent(prompt)}`);
-      const data = await res.json();
-      document.getElementById("result").innerText = `AI: ${data.aiReply}`;
-    }
-  </script>
+  <div class="container">
+    <h1>AI Chat</h1>
+    <textarea id="input" placeholder="Type your message here..."></textarea>
+    <button id="sendBtn">Send</button>
+    <div id="output"></div>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -1,86 +1,66 @@
-// chat.js
-import { useState } from 'react';
+// client/pages/chat.js
+import { useState, useRef, useEffect } from 'react';
 
 export default function Chat() {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState([]);
   const [loading, setLoading] = useState(false);
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    if (boxRef.current) boxRef.current.scrollTop = boxRef.current.scrollHeight;
+  }, [chatLog]);
 
   const sendMessageToAI = async () => {
-    if (!message) return;
+    const text = message.trim();
+    if (!text) return;
 
+    setChatLog(prev => [...prev, { role: 'user', content: text }]);
+    setMessage('');
     setLoading(true);
-    const userMessage = { role: 'user', content: message };
-    setChatLog((prev) => [...prev, userMessage]);
 
     try {
-      const res = await fetch('/api/ai', {
+      const res = await fetch('http://localhost:3001/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message: text }),
       });
 
-      const data = await res.json();
+      // ALWAYS log status + raw body for debugging
+      const data = await res.json().catch(() => null);
+      console.log('/api/ai status', res.status, 'body:', data);
 
-      const aiMessage = {
-        role: 'ai',
-        content: data.message || 'No response'
-      };
-
-      setChatLog((prev) => [...prev, aiMessage]);
-
+      // The API returns { message: "..." }
+      const aiText = data?.message ?? (data?.details ? `Error: ${JSON.stringify(data.details)}` : 'No response');
+      setChatLog(prev => [...prev, { role: 'ai', content: aiText }]);
     } catch (err) {
-      setChatLog((prev) => [...prev, { role: 'ai', content: `Error: ${err.message}` }]);
+      console.error('Network error calling /api/ai:', err);
+      setChatLog(prev => [...prev, { role: 'ai', content: `Network error: ${err.message}` }]);
     } finally {
       setLoading(false);
-      setMessage('');
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') sendMessageToAI();
-  };
+  const onKeyDown = (e) => { if (e.key === 'Enter') sendMessageToAI(); };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
+    <div style={{ padding: 20, maxWidth: 700, margin: '40px auto', fontFamily: 'Arial, sans-serif' }}>
       <h1>🚀 My AI Assistant</h1>
-      <div
-        style={{
-          border: '1px solid #ccc',
-          padding: '10px',
-          height: '400px',
-          overflowY: 'auto',
-          marginBottom: '10px'
-        }}
-      >
-        {chatLog.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              textAlign: msg.role === 'user' ? 'right' : 'left',
-              margin: '5px 0'
-            }}
-          >
-            <strong>{msg.role === 'user' ? 'You' : 'AI'}: </strong>
-            <span>{msg.content}</span>
+
+      <div ref={boxRef} style={{ border: '1px solid #ddd', padding: 12, height: 380, overflowY: 'auto', marginBottom: 12, borderRadius: 6, background: '#fafafa' }}>
+        {chatLog.map((m, i) => (
+          <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '8px 0' }}>
+            <b>{m.role === 'user' ? 'You' : 'AI'}: </b>
+            <span>{m.content}</span>
           </div>
         ))}
+        {loading && <div style={{ color: '#666' }}>AI is typing…</div>}
       </div>
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Type your message..."
-        style={{ width: '80%', padding: '10px' }}
-      />
-      <button
-        onClick={sendMessageToAI}
-        disabled={loading}
-        style={{ padding: '10px 20px', marginLeft: '5px' }}
-      >
-        {loading ? 'Sending...' : 'Send'}
-      </button>
+
+      <div>
+        <input type="text" value={message} onChange={e => setMessage(e.target.value)} onKeyDown={onKeyDown} placeholder="Type a message..." style={{ width: '78%', padding: '10px', borderRadius: 4, border: '1px solid #ccc' }} />
+        <button onClick={sendMessageToAI} disabled={loading} style={{ padding: '10px 16px', marginLeft: 8 }}>{loading ? 'Sending…' : 'Send'}</button>
+      </div>
     </div>
   );
 }
