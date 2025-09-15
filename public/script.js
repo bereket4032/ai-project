@@ -32,7 +32,7 @@ sendBtn.addEventListener("click", async () => {
   }
 });
 
-// Optional: send message on Enter key
+// Send on Enter (without shift)
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
