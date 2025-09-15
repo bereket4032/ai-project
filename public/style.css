@@ -129,3 +129,22 @@ button {
 button:hover {
   background: #1d4ed8;
 }
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  background: #ffffff;
+  border-left: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.content-area h1 {
+  margin-bottom: 1rem;
+  font-size: 24px;
+  color: #111827;
+}
+
+.content-area p {
+  margin-bottom: 1rem;
+  color: #374151;
+  line-height: 1.6;
+}
